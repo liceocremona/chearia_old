@@ -2,7 +2,7 @@
   <a href="http://progettochearia.it/">
     <img src="client/website/publlc/images/logo-che-aria.jpg" alt="Logo" width="341.5" height="192">
   </a>
-  <h2 align="center">CheAria</h2>
+  <h3 align="center">CheAria</h3>
   <p align="center">
     <a href="http://progettochearia.it/">http://progettochearia.it/</a>
   </p>
