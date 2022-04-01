@@ -4,7 +4,7 @@
   </a>
   <h3 align="center">CheAria</h3>
   <p align="center">
-    <a href="http://progettochearia.it/">http://progettochearia.it/</a>
+    <a href="http://progettochearia.it/">progettochearia.it</a>
   </p>
 </div>
 
