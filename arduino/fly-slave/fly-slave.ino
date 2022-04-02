@@ -7,9 +7,6 @@
 #include <ArduinoHttpClient.h>
 #include "secret.h"
 
-#define FIREBASE_HOST "olimpiadirobotica-2021-default-rtdb.europe-west1.firebasedatabase.app"
-#define FIREBASE_AUTH ""
-
 
 char time_server[] = "2vhf9o.deta.dev";
 String today_date = "01-01-1975";
@@ -92,14 +89,14 @@ void scalettaData(String dato) {
 
 String getCurrentTime() {//questa funzione ritorna l'ora e i minuti nel formato stringa
   String timestamp = "00-00";
-  
+  int now;
   if (start_day_millis = 0) {
-    int now = round(millis());
+    now = round(millis());
   }
   else 
   {
     int now_global = round(millis());
-    int now = now_global - start_day_millis;
+    now = now_global - start_day_millis;
   }
 
   int now_sec = now /1000;
@@ -141,10 +138,13 @@ bool addData(String dataName, float Data) // questa funzione aggiunge i dati al 
   Serial.println("inizio lettura data");
   String curr_time = getCurrentTime();
   String curr_date = getCurrentDate();
+  Serial.println(curr_time);
+  Serial.println(curr_date);
   if (curr_date) {
     Serial.println("data ricevuta, inizio lettura tempo");
       if (curr_time) {
         Serial.println("tempo ricevuto, imposto il dato nel db");
+        Serial.println(path+"/" + dataName + "/data/" + curr_date + "/" + curr_time);
         if (Firebase.setFloat(firebaseData, path+"/" + dataName + "/data/" + curr_date + "/" + curr_time, Data)) {
            if (firebaseData.floatData()) {
             Serial.print("azione riuscita, il dato è: ");
@@ -158,6 +158,7 @@ bool addData(String dataName, float Data) // questa funzione aggiunge i dati al 
         } 
         else {
           Serial.println("errore nel inserimento del dato, net error");
+          Serial.println(firebaseData.errorReason());
           return false;
         }
         
