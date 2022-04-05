@@ -114,15 +114,15 @@ String getCurrentTime() {//questa funzione ritorna l'ora e i minuti nel formato 
     start_day_millis = round(millis());
     Serial.println("aggiornamento nuovo giorno");
     updateTime();
-    updateTime();
+    updateDate();
   } 
-  if ((real_time_m < 10) && (real_time_h > 10)) {
+  if ((real_time_m < 10) && (real_time_h >= 10)) {
     timestamp = String(real_time_h) + "-" + "0" + String(real_time_m);
   } else if ((real_time_m < 10) && (real_time_h < 10)) {
     timestamp = "0" + String(real_time_h) + "-" + "0" + String(real_time_m);
-  } else if ((real_time_m > 10) && (real_time_h < 10)) {
+  } else if ((real_time_m >= 10) && (real_time_h < 10)) {
     timestamp = "0" + String(real_time_h) + "-" + String(real_time_m);
-  } else if ((real_time_m > 10) && (real_time_h > 10)){
+  } else if ((real_time_m >= 10) && (real_time_h >= 10)){
     timestamp = String(real_time_h) + "-" + String(real_time_m);
   } else {
     timestamp = String(real_time_h) + "-" + String(real_time_m);
