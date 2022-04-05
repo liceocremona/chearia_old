@@ -1,6 +1,6 @@
 <div align="center">
   <a href="http://progettochearia.it/">
-    <img src="client/website/publlc/images/logo-che-aria.jpg" alt="Logo" width="341.5" height="192">
+    <img src="https://github.com/liceocremona/chearia/blob/main/client/website/public/images/logo-che-aria.jpg" alt="Logo" width="341.5" height="192">
   </a>
   <h3 align="center">CheAria</h3>
   <p align="center">
