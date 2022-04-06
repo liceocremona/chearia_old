@@ -1,6 +1,5 @@
-## Credenziali connessione wifi
-- Creare nelle cartelle `base` e `fly-slave` un file chiamato `secret.h`
-- Inserire nei file il seguente codice con le credenziali:
+## Configurazione
+- Inserire le credenziali nei file `secret.h`
   ```
   #define WIFI_SSID ""  //inserire il nome della WiFi
   #define WIFI_PASSWORD ""  //inserire la password della WiFi
