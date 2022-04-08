@@ -12,8 +12,12 @@
 
 char time_server[] = "2vhf9o.deta.dev"; //api per ottenere l'ora
 String today_date = "01-01-1975";
-int ms_from_midnight_upd = 0;
-int start_millis = 0;
+int start_hour = 0;
+int start_min = 0;
+int one_state = 0;
+int start_day_millis = 0;
+int32_t start_ms;
+int32_t start_millis;
 
 //Define Firebase data object
 FirebaseData firebaseData;//Inizializzanione classe delle funzioni per la libreria FIrebase
@@ -23,8 +27,6 @@ int status;
 
 String path = "/db1";//La sottocartella dove salvare i dati di firebase 
 //https://olimpiadirobotica-2021-default-rtdb.europe-west1.firebasedatabase.app/db1  <--
-//Aggiorna l'orario facendo una richiesta http alle API
-
 
 void setup() {
   Serial.begin(9600);
@@ -66,11 +68,7 @@ void loop() {
   delay(50);
 }
 
-
-
-
-void receiveEvent(int bytes) {
-//Funzione richiamata al ricevimento dei dati 
+void receiveEvent(int bytes) {//Funzione richiamata al ricevimento dei dati 
   //Funzionamento connessione I2C con libreria Wire:
   //La scheda a 5V (Es. Mega) invia i dati un byte alla volta con questo formato {valore}-{nomedato}
   //nomedato equivale alla chiave del DB Firebase
@@ -104,95 +102,108 @@ void scalettaData(String dato) {
     }
 }
 
-void updateTime() {
-  Serial.println("invio richiesta http a /timems");
-  //richiesta a endpoint API
-  client.get("/timems/-2");// /timems/{tz} tz = timezone in formato ETC/GMT https://www.ibm.com/docs/en/cloudpakw3700/2.3.0.0?topic=SS6PD2_2.3.0/doc/psapsys_restapi/time_zone_list.html
-  Serial.println("lettura risposta");
-  int response_code4 = client.responseStatusCode();
-  if (response_code4 == 200) {
-  String timestamp_ms = client.responseBody();//Testo risposta
-  ms_from_midnight_upd = timestamp_ms.toInt();}
-  start_millis = round(millis());//Impostazione del millis() al momento dell'aggiornamento
-  Serial.println(ms_from_midnight_upd);
-}
-
-void updateDate() {
-  Serial.println("invio richiesta http a /date");
-  //Richiesta a Endpoint API
-  client.get("/date");
-  Serial.println("lettura risposta");
-  int response_code3 = client.responseStatusCode();
-  if (response_code3 == 200) {
-  today_date = client.responseBody(); }
-  Serial.println(today_date);
-}
+String getCurrentTime() {//questa funzione ritorna l'ora e i minuti nel formato stringa
+  String timestamp = "00-00";
+  int now ;
+  if (start_day_millis = 0) {
+    now = round(millis());
+  }
+  else 
+  {
+    int now_global = round(millis());
+    now = now_global - start_day_millis;
+  }
 
 
-String getCurrentTime() {
-  //questa funzione ritorna l'ora e i minuti nel formato stringa
-  String timestamp = "00-00"; //La timestamp è il formato con il quale indichiamo la data su Firebase
-
-  int day_millis = ms_from_midnight_upd + (round(millis()) - start_millis); 
-  // calcolo ms da mezzanotte sommando l'orario a cui si è aggiornata la data e il tempo di attività della scheda dall'ultimo aggiornamento
-
-  Serial.println("ms da mezzanotte");
-  Serial.println(day_millis);
-  if (day_millis>=86400000) {
-    Serial.println("E' passata mezzanotte, aggiorno la data e l'ora");
+  int now_sec = now /1000;
+  int now_min = now_sec / 60;
+  int now_hour = now_min / 60;
+  int now_real_min = now_min - (60 *now_hour);
+  int real_time_h = start_hour + now_hour;
+  int real_time_m = start_min + now_real_min;
+  if (real_time_m > 59) {
+    real_time_h += 1;
+    real_time_m = real_time_m - 60;
+  };
+  if (real_time_h > 23) {
+    real_time_h = 0;
+    start_day_millis = round(millis());
+    Serial.println("aggiornamento nuovo giorno");
     updateTime();
     updateDate();
-    day_millis = ms_from_midnight_upd + (round(millis()) - start_millis);
-  }
-  int now_hour = day_millis / 3600000;//calcolo ora
-  int now_min = (day_millis / 60000) % 60;//calcolo minuti
-  
-  Serial.println(now_hour);
-  Serial.println(now_min);
-  
-  //Creazione della timestamp
-  //Le ore e i minuti devono sempre essere indicati con due cifre, quando il numero è minore 
-  //di 10 bisogna agiungere uno zero prima. Quest'operazione è necessaria per permettere a Firebase 
-  //di ordinare i dati nel modo corretto nel DB
-  //Esempio: 
-  //02-08
-  //02-24
-  //11-04
-  //16-47
-  if (now_hour<10 && now_min<10) {//0n-0n
-    timestamp = String("0") + String(now_hour) + String("-0") + String(now_min);
-  } else if (now_hour<10 && now_min>=10) {//0n-nn
-    timestamp = String("0") + String(now_hour) + String("-") + String(now_min);
-  } else if (now_hour>=10 && now_min<10) {//nn-0n
-    timestamp = String(now_hour) + String("-0") + String(now_min);
-  } else if (now_hour>=10 && now_min>=10) {//nn-nn
-    timestamp = String(now_hour) + String("-") + String(now_min);
+  } 
+  if ((real_time_m < 10) && (real_time_h >= 10)) {
+    timestamp = String(real_time_h) + "-" + "0" + String(real_time_m);
+  } else if ((real_time_m < 10) && (real_time_h < 10)) {
+    timestamp = "0" + String(real_time_h) + "-" + "0" + String(real_time_m);
+  } else if ((real_time_m >= 10) && (real_time_h < 10)) {
+    timestamp = "0" + String(real_time_h) + "-" + String(real_time_m);
+  } else if ((real_time_m >= 10) && (real_time_h >= 10)){
+    timestamp = String(real_time_h) + "-" + String(real_time_m);
   } else {
-    timestamp = String(now_hour) + String("-") + String(now_min);
+    timestamp = String(real_time_h) + "-" + String(real_time_m);
   }
   return timestamp;
 }
 
-String getCurrentDate() {
-  //questa funzione ritorna la data nel formato stringa
+String getCurrentTimeMS() {//questa funzione ritorna l'ora e i minuti nel formato stringa
+  String timestamp = "00-00";
+  if int 
+  if (start_day_millis = 0) {
+    now = round(millis());
+  }
+  else 
+  {
+    int now_global = round(millis());
+    now = now_global - start_day_millis;
+  }
+
+  int now_sec = now /1000;
+  int now_min = now_sec / 60;
+  int now_hour = now_min / 60;
+  int now_real_min = now_min - (60 *now_hour);
+  int real_time_h = start_hour + now_hour;
+  int real_time_m = start_min + now_real_min;
+  if (real_time_m > 59) {
+    real_time_h += 1;
+    real_time_m = real_time_m - 60;
+  };
+  if (real_time_h > 23) {
+    real_time_h = 0;
+    start_day_millis = round(millis());
+    Serial.println("aggiornamento nuovo giorno");
+    updateTime();
+    updateDate();
+  } 
+  if ((real_time_m < 10) && (real_time_h >= 10)) {
+    timestamp = String(real_time_h) + "-" + "0" + String(real_time_m);
+  } else if ((real_time_m < 10) && (real_time_h < 10)) {
+    timestamp = "0" + String(real_time_h) + "-" + "0" + String(real_time_m);
+  } else if ((real_time_m >= 10) && (real_time_h < 10)) {
+    timestamp = "0" + String(real_time_h) + "-" + String(real_time_m);
+  } else if ((real_time_m >= 10) && (real_time_h >= 10)){
+    timestamp = String(real_time_h) + "-" + String(real_time_m);
+  } else {
+    timestamp = String(real_time_h) + "-" + String(real_time_m);
+  }
+  return timestamp;
+}
+
+String getCurrentDate() {//questa funzione ritorna la data nel formato stringa
   return today_date;
 }
 
-
-
-
-bool addData(String dataName, float Data) { 
-// questa funzione aggiunge i dati al db
+bool addData(String dataName, float Data) // questa funzione aggiunge i dati al db
+{
   Serial.println("inizio lettura data");
-  String curr_time = getCurrentTime(); 
+  String curr_time = getCurrentTime();
+  String curr_date = getCurrentDate();
   Serial.println(curr_time);
-  
-  if (curr_time) {//se l'orario è valido
-    Serial.println("tempo ricevuta, inizio lettura data");
-    String curr_date = getCurrentDate();
-    Serial.println(curr_date);
-      if (curr_date) { // se l'orario è valido
-        Serial.println("data ricevuta, imposto il dato nel db");
+  Serial.println(curr_date);
+  if (curr_date) {//se la data è valida 
+    Serial.println("data ricevuta, inizio lettura tempo");
+      if (curr_time) { // se l'orario è valido
+        Serial.println("tempo ricevuto, imposto il dato nel db");
         Serial.println(path+"/" + dataName + "/data/" + curr_date + "/" + curr_time);
         //imposta i dati sul DB Firebase 
         if (Firebase.setFloat(firebaseData, path+"/" + dataName + "/data/" + curr_date + "/" + curr_time, Data)) { 
@@ -215,12 +226,66 @@ bool addData(String dataName, float Data) {
         
       }
       else {
-        Serial.println("errore nel leggere la data");
+        Serial.println("errore nel leggere l'ora");
         return false;
       }
   }
   else {
-    Serial.println("errore nel leggere l'orario");
+    Serial.println("errore nel leggere la data");
     return false;
   }
+}
+
+
+void updateTime() {
+  Serial.println("invio richiesta http a /time");
+  client.get("/time");
+  Serial.println("lettura risposta");
+  int response_code4 = client.responseStatusCode();
+  if (response_code4 == 200) {
+  String time_timestamp = client.responseBody();
+  char timestamp_ch[6];
+  char *numb = NULL;
+  time_timestamp.toCharArray(timestamp_ch, 6);
+  numb = strtok(timestamp_ch, "-");
+  while(numb != NULL)
+    {   
+      if (one_state ==0) {
+         String h_s = String(numb);
+        start_hour = h_s.toInt();
+        one_state ++;
+      }
+      else {      
+        String minu_s = String(numb);
+        start_min = minu_s.toInt();
+      }
+       numb = strtok(NULL, "-"); 
+    };
+  }
+  Serial.println(start_hour);
+  Serial.println(start_min);
+}
+
+
+void updateTimeMS() {
+  Serial.println("invio richiesta http a /timems");
+  client.get("/timems/-2");
+  Serial.println("lettura risposta");
+  int response_code4 = client.responseStatusCode();
+  if (response_code4 == 200) {
+  String timestamp_ms = client.responseBody();
+  start_ms = timestamp_ms.toInt();
+  Serial.println(start_ms);
+}
+
+
+
+void updateDate() {
+  Serial.println("invio richiesta http a /date");
+  client.get("/date");
+  Serial.println("lettura risposta");
+  int response_code3 = client.responseStatusCode();
+  if (response_code3 == 200) {
+  today_date = client.responseBody(); }
+  Serial.println(today_date);
 }
