@@ -120,7 +120,7 @@ void updateTime() {
 void updateDate() {
   Serial.println("invio richiesta http a /date");
   //Richiesta a Endpoint API
-  client.get("/date");
+  client.get("/date/-2");
   Serial.println("lettura risposta");
   int response_code3 = client.responseStatusCode();
   if (response_code3 == 200) {
