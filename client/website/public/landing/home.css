@@ -3,6 +3,7 @@
     margin: 0;
     text-decoration: none;
     max-width: 100%;
+    overflow-x: hidden;
 }
 
 #navbar {
@@ -55,7 +56,7 @@ li {
     position: relative;
     background-image:url(img/imghome1.jpg);
     background-size: cover;
-    background-position:center;
+    background-position:top;
     background-attachment: fixed;
     background-repeat: no-repeat;
 }
@@ -63,18 +64,25 @@ li {
     position: absolute;
     font-size: 60px;
     font-family: 'Noto Sans TC', sans-serif;
-    top: 30%;
-    left: 5%;
+    top: 27%;
+    left: 7%;
     color: white;
 }
 .headerdesc{
     position: absolute;
     font-size: 30px;
     font-family: 'Noto Sans TC', sans-serif;
-    color: white    ;
-    top: 40%;
-    left: 10%;
+    color: white;
+    top: 41%;
+    left: 8%;
+    overflow: hidden;
+    animation: typing 4s forwards;
+    white-space: nowrap;
 }
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
 .title1{
     display: flex;
     align-items: center;
@@ -82,7 +90,7 @@ li {
     margin-top: 30px;
     width: 100vw;
     height: 10vh;
-    font-size: 35px;
+    font-size: 45px;
     color: rgb(15, 15, 240);
     font-family: 'Noto Sans TC', sans-serif;
 }
@@ -97,7 +105,6 @@ li {
 .element1>img {
     display: flex;
     justify-content: flex-start;
-    border-radius: 5px;
     width: 500px;
     height: 300px;
 }
@@ -109,4 +116,21 @@ li {
     color: black;
     font-size: 20px;
     font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    
+}
+.polluant{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items:center;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 70px;
+    color: grey;
+
+}
+.polluant-name{
+    display: flex;
+    caret-color: grey;
+    font-size: 35px;
+    font-family: 'Noto Sans TC', sans-serif;
 }
