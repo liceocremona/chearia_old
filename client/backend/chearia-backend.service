@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=chearia
 Group=www-data
-WorkingDirectory=/home/chearia/chearia-repo-backend/client/server
+WorkingDirectory=/home/chearia/chearia-repo-backend/client/backend/server
 Environment="PATH=/home/chearia/chearia-repo-backend/client/backend/venv/bin"
 ExecStart=/home/chearia/chearia-repo-backend/client/backend/venv/bin/gunicorn --workers 3 --bind unix:chearia_backend.sock -m 007 wsgi:app
 
