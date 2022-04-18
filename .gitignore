@@ -3,3 +3,5 @@ package-lock.json
 secret
 venv
 __pycache__
+.Rproj.user
+.RData
