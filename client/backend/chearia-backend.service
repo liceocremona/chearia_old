@@ -6,8 +6,7 @@ After=network.target
 User=chearia
 Group=www-data
 WorkingDirectory=/home/chearia/chearia-repo-backend/client/backend/server
-Environment="PATH=/home/chearia/chearia-repo-backend/client/backend/venv/bin"
-ExecStart=/home/chearia/chearia-repo-backend/client/backend/venv/bin/gunicorn --workers 3 --env SCRIPT_NAME=/v1 --bind unix:chearia_backend.sock -m 777 wsgi:app
+ExecStart=/usr/bin/sh /home/chearia/chearia-repo-backend/client/backend/start.sh
 
 [Install]
 WantedBy=multi-user.target
