@@ -1,8 +1,8 @@
-node_modules
-package-lock.json
-secret
-venv
-__pycache__
 .Rproj.user
 .RData
 .Rhistory
+node_modules
+secret
+venv
+.env
+__pycache__
