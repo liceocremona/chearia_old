@@ -1,19 +1,34 @@
+import os
 from flask import Flask
 from flask import request
 from flask import redirect
 from flask import jsonify
 from flask_cors import CORS
-import time
 import jwt
 import hashlib
 import requests
 from pytz import timezone
 from datetime import datetime
+import re
+from dotenv import load_dotenv
 
-KEY = b"JaNdRgUkXp2s5v8y/A?D(G+KbPeShVmY"
-FIREBASE_TOKEN = "qyi23POQvYs4zZb0pnrlCoVVUdNLXLmbdatb028c"
+#load key from env variable
+load_dotenv()
+KEY = bytes(os.getenv("KEY"), "utf-8")
+FIREBASE_TOKEN = os.getenv("FIREBASE_TOKEN")
+STORAGE= os.getenv("STORAGE")
+
+#init Flask app
 app = Flask(__name__)
-CORS(app, origins=["https://chearia.web.app"])
+CORS(app,
+origins=["https://progettochearia.it",
+ "https://web.progettochearia.it",
+ "https://admin.progettochearia.it"]
+)
+
+#regex code and timezone
+timestamp_regex = re.compile("^(0[1-9]|[12][0-9]|3[01])[- \/.](0[1-9]|1[012])[- \/.](19|20)\d\d$") #https://www.regular-expressions.info/dates.html
+dataid_regex = re.compile("(example|CO|altitude|humidity|ozone|pressure|temperature)")
 rome_tz = timezone('Europe/Rome')
 
 def checkLogin(user_dict):
@@ -40,6 +55,75 @@ def checkToken(dict_token):
 @app.route('/', methods = ['GET'])
 def get():
     return "ciao"
+
+@app.route('/liststorage/bytype', methods=['POST'])
+def liststoragebytype():
+    body = request.json
+
+    datas_id = ["example"]
+    timestamps = ["27-04-2022"]
+    returngraph = []
+    for root, dirs, files in os.walk(STORAGE):
+        for file in files:
+            if file.endswith(".svg"):
+                graph = file.replace(STORAGE, "")
+                graph_name = graph.replace(".svg", "")
+                data_id = graph_name.split("_")[-1]
+                if data_id in datas_id:
+                    data_timestamp = graph_name.split("_")[-2]
+                    name = graph_name.split("_")[-3]
+                    if data_timestamp in timestamps:
+                        returngraph.append({
+                            "file": graph,
+                            "title": name,
+                        })
+    return jsonify(returngraph)
+
+@app.route('/liststorage', methods=['GET'])
+def liststorage():
+    args_date_list = request.args.getlist("date")
+    
+    if not len(args_date_list) > 0:
+        return jsonify({"error": "date required"}), 500
+  
+    for date_timestamp in args_date_list:
+        if not timestamp_regex.match(date_timestamp):
+            return jsonify({"error": "invalid date"}), 500
+        
+    if request.args.getlist("id") != None:
+        datas_id = request.args.getlist("id")
+    else:
+        datas_id = []
+    timestamps = args_date_list
+    returngraph = []
+
+    for root, dirs, files in os.walk(STORAGE):
+        for file in files:
+            if file.endswith(".svg"):
+                graph = file.replace(STORAGE, "")
+                graph_name = graph.replace(".svg", "")
+                data_timestamp = graph_name.split("_")[-1]
+                if data_timestamp in timestamps:
+                    if len(datas_id) == 0:
+                        name = graph_name.split("_")[-3]
+                        returngraph.append({
+                            "file": graph,
+                            "title": name,
+                        })
+                        continue
+                    else:
+                        data_id = graph_name.split("_")[-2]
+                        
+                        if data_id in datas_id:
+                            name = graph_name.split("_")[-3]
+                            returngraph.append({
+                                "file": graph,
+                                "title": name,
+                            })
+    if len(returngraph) == 0:
+        return jsonify({"error": "no data found"}), 404
+    return jsonify(returngraph), 200
+                
 
 @app.route('/dbtest.json', methods = ['PUT'])
 def getbody():
@@ -99,7 +183,7 @@ def signup():
 def login():
     user_dict = {"username": request.args.get("username"), "password": request.args.get("password")}
     token = generateToken(user_dict)
-    return redirect("https://chearia.web.app/html/login_m.htm?token="+ token)
+    return redirect("https://admin.progettochearia.it/login_redirect?token="+ token)
 
 @app.route("/account/checktoken", methods = ['GET'])
 def checkauth():
