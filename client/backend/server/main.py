@@ -79,22 +79,30 @@ def liststoragebytype():
                         })
     return jsonify(returngraph)
 
-@app.route('/liststorage', methods=['GET'])
+@app.route('/liststorage', methods=['POST'])
 def liststorage():
-    args_date_list = request.args.getlist("date")
+    body = request.json
     
-    if not len(args_date_list) > 0:
+    if not "dates" in body.keys():
         return jsonify({"error": "date required"}), 500
-  
-    for date_timestamp in args_date_list:
-        if not timestamp_regex.match(date_timestamp):
-            return jsonify({"error": "invalid date"}), 500
-        
-    if request.args.getlist("id") != None:
-        datas_id = request.args.getlist("id")
     else:
+        args_date_list = body["dates"]
+        if not len(args_date_list) > 0:
+            return jsonify({"error": "date required"}), 500
+        else:
+            for date_timestamp in args_date_list:
+                if not timestamp_regex.match(date_timestamp):
+                    return jsonify({"error": "invalid date"}), 500
+            timestamps = args_date_list    
+
+    if not "id" in body.keys():
         datas_id = []
-    timestamps = args_date_list
+    else:
+        if len(body["id"]) == 0:
+            datas_id = []
+        else:
+            datas_id = body["id"]
+    
     returngraph = []
 
     for root, dirs, files in os.walk(STORAGE):
