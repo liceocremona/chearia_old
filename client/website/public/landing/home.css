@@ -210,7 +210,7 @@ li {
 @media screen and (max-width: 600px){
     .desc1{
         width: 360px;
-        height: 610px;
+        height: initial;
         margin-top: 30px;
         text-align:center;
         font-size: 25px;
