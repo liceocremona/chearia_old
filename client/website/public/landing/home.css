@@ -125,7 +125,7 @@ li {
         left: 50%;
         transform: translateX(-50%);
         text-align: center;
-        font-size: 27px;
+        font-size: 25px;
     }
 }
 @keyframes typing {
@@ -164,6 +164,11 @@ li {
     color: rgb(15, 15, 240);
     font-family: 'Noto Sans TC', sans-serif;
 }
+@media screen and (max-width: 600px){
+    .title1 {
+        font-size: 40px;
+    }
+}
 .element1 {
     display: flex;
     justify-content: space-evenly;
@@ -175,9 +180,9 @@ li {
 @media screen and (max-width: 600px){
     .element1{
         margin-top: 10px;
-        height: 600px;
+        height: initial;
+        align-items: center;
         flex-direction: column;
-        justify-content: space-evenly;
     }
 }
 .element1>img {
@@ -189,10 +194,8 @@ li {
 @media screen and (max-width: 600px){
     .element1>img{
         justify-content: none;
-        margin-left: 50%;
-        transform: translateX(-50%);
         width: 380px;
-        height: 570px;
+        height: 230px;
     }
 }
 .desc1{
@@ -210,9 +213,7 @@ li {
         height: 610px;
         margin-top: 30px;
         text-align:center;
-        margin-left: 50%;
-        transform: translateX(-50%);
-        font-size: 27px;
+        font-size: 25px;
     }
 }
 .polluant{
@@ -226,7 +227,7 @@ li {
 }
 @media screen and (max-width: 600px){
     .polluant{
-        justify-content: space-evenly;
+       margin: 20px;
     }
 }
 .polluant-name{

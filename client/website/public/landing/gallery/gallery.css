@@ -102,22 +102,28 @@ li {
     width: 100vw;
 }
 
-@media screen and (max-width: 600px){
-    .img1{
-        transform: translateX(-5%);
-    }
-}
+
 .img1>img {
     display: flex;
     width: 450px;
     height: 300px;
     margin: 40px;
 }
+@media screen and (max-width: 600px){
+    .img1{
+        display: flex;
+    }
+}
 .img2>img {
     display: flex;
-    width: 350px;
+    width: initial;
     height: 777px;
     margin: 40px;
+}
+@media screen and (max-width: 600px){
+    .img2{
+        display: flex;
+    }
 }
 .footer{
     display: flex;
