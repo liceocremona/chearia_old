@@ -76,7 +76,7 @@ li {
     }
     .respnavitem>a {
         font-size: 20px;
-        font-family: 'Pacifico', cursive;
+        font-family: 'Pacifico', Arial, Helvetica, sans-serif;
         color:  rgb(15, 15, 240);
     }
 }
@@ -147,4 +147,10 @@ li {
 .company {
     font-family: 'Oswald', sans-serif;
     font-size: 20px;
+}
+@media screen and (max-width: 600px){
+    .company{
+        text-align: center;
+        margin-bottom: 10vh;
+    }
 }
