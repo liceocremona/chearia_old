@@ -1,5 +1,5 @@
 import os
-STORAGE = "/home/eagle/sdnico/myapp/chearia/client/backend/test"
+STORAGE = ""
 def liststorage():
 
     datas_id = []
