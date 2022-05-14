@@ -1,11 +1,16 @@
 #include <Wire.h>
-
 #include <SFE_BMP180.h>
-SFE_BMP180 pressure;
+#include "MQ7.h"
+
+
+SFE_BMP180 PressureSens;
 double baseline; // baseline pressure
 bool pressure_state;
 
-#define MQ7 A1
+#define A_PIN 1
+#define VOLTAGE 5
+// init MQ7 device
+MQ7 mq7(A_PIN, VOLTAGE);
 
 #include <DHT.h>
 DHT dht(22, DHT11);
@@ -23,7 +28,7 @@ void setup() {
 
   // Initialize the sensor (it is important to get calibration values stored on the device).
 
-  if (pressure.begin()) {
+  if (PressureSens.begin()) {
     Serial.println("BMP180 init success");
     pressure_state = true;
   }
@@ -45,8 +50,10 @@ void setup() {
   Serial.print(baseline);
   Serial.println(" mb");  
 
-  //impostazzioni sensore co
-  pinMode(MQ7, INPUT);
+  //impostazioni sensore co
+  Serial.println("Calibrating MQ7");
+  mq7.calibrate();    // calculates R0
+  Serial.println("Calibration done!");
 
   //inizializzazzione sensore temperatura
   dht.begin();
@@ -69,10 +76,10 @@ void setup() {
 
 void loop() {
   //inivio richieste a sensori pressione e passaggio a mkr
-  char altitude[20];
-  getAltitude(altitude);
-  Serial.println(altitude);
-  sendData(altitude);
+  char pressure[20];
+  getPressuredata(pressure);
+  Serial.println(pressure);
+  sendData(pressure);
   
   delay(3000);
   
@@ -83,7 +90,7 @@ void loop() {
 
   delay(3000);
 
-  char temperture_mis[20];
+  char temperture_mis[20]; //get temperatura, converti in 
   getTemperature_sec(temperture_mis);
   Serial.println(temperture_mis);
   sendData(temperture_mis);
@@ -124,35 +131,35 @@ void sendData(char data[]) {//manda i dati
 
 
 //funzioni che ritornano il valore
-void getAltitude(char return_value[]) {
+void getPressuredata(char return_value[]) {
   if (pressure_state) {
     //get ìaltitude
-  float altitude = 101.00;
   double a,P;
   
   // Get a new pressure reading:
 
   P = getPressure();
-
+  float pressure = 0;
+  pressure= (float) P;
   // Show the relative altitude difference between
   // the new reading and the baseline reading:
-  if (P) {
+  /*if (P) {
     a = pressure.altitude(P,baseline);
     a += 139.00;
     altitude = (float) a;
-  }
-  char altitude_ch[5];
-  dtostrf(altitude, 6, 2, altitude_ch);
+  }*/
+  char pressure_ch[5];
+  dtostrf(pressure, 6, 2, pressure_ch);
   char unified_val[20];
-  strcpy(unified_val, altitude_ch);
-  strcat(unified_val, "-altitude");
+  strcpy(unified_val, pressure_ch);
+  strcat(unified_val, "-pressure");
   int len = (sizeof(unified_val))-1;
   for (int i = 0; i < len; i ++) {
     return_value[i] = unified_val[i];
   }
   } 
   else {
-    char default_result[] = "100.11-altitude";
+    char default_result[] = "1.00-pressure";
     int len = (sizeof(default_result)) -1;
     for (int i = 0; i < len; i++) {
       return_value[i] = default_result[i];
@@ -163,8 +170,7 @@ void getAltitude(char return_value[]) {
 void getCO(char return_value[]) {
   //get CO
   float CO;
-  CO = analogRead(MQ7);
-  CO = CO + 120.00;
+  CO = mq7.readPpm();
   char CO_ch[5];
   dtostrf(CO, 6, 2, CO_ch);
   char unified[20];
@@ -216,6 +222,15 @@ void getHumidity(char return_value[]) {
 
 void getOzone(char return_value[]) {
   float ozone = 0.00;
+  float TemperatureO3 = 0.00;
+  float HumidityO3 = 0.00;
+  
+  TemperatureO3 = dht.readTemperature();
+  HumidityO3 = dht.readHumidity();
+  
+  int8_t TemperatureO3_int = (int)TemperatureO3;
+  uint8_t HumidityO3_int = (int)HumidityO3;
+  MQ131.setEnv(TemperatureO3_int,HumidityO3_int); 
   MQ131.sample();
   ozone = MQ131.getO3(UG_M3);
   //inserire operazioni sesnsore
@@ -257,7 +272,7 @@ double getPressure()
   // If request is successful, the number of ms to wait is returned.
   // If request is unsuccessful, 0 is returned.
 
-  status = pressure.startTemperature();
+  status = PressureSens.startTemperature();
   if (status != 0)
   {
     // Wait for the measurement to complete:
@@ -269,7 +284,7 @@ double getPressure()
     // Use '&T' to provide the address of T to the function.
     // Function returns 1 if successful, 0 if failure.
 
-    status = pressure.getTemperature(T);
+    status = PressureSens.getTemperature(T);
     if (status != 0)
     {
       // Start a pressure measurement:
@@ -277,7 +292,7 @@ double getPressure()
       // If request is successful, the number of ms to wait is returned.
       // If request is unsuccessful, 0 is returned.
 
-      status = pressure.startPressure(3);
+      status = PressureSens.startPressure(3);
       if (status != 0)
       {
         // Wait for the measurement to complete:
@@ -290,7 +305,7 @@ double getPressure()
         // (If temperature is stable, you can do one temperature measurement for a number of pressure measurements.)
         // Function returns 1 if successful, 0 if failure.
 
-        status = pressure.getPressure(P,T);
+        status = PressureSens.getPressure(P,T);
         if (status != 0)
         {
           return(P);
