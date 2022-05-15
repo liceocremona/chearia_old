@@ -1,27 +1,31 @@
-from flask import Flask, redirect
-from flask_cors import CORS
-from account import account_bp
-from private import private_bp
-from board import board_bp
-from resources import resources_bp
+from fastapi import FastAPI, Depends
+from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+from routers import board, resources
 
-#init Flask app
-app = Flask(__name__)
-CORS(app,
+app = FastAPI()
+
 origins=["https://progettochearia.it",
  "https://web.progettochearia.it",
  "https://admin.progettochearia.it"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins= origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-app.register_blueprint(account_bp, url_prefix="/account")
-app.register_blueprint(private_bp, url_prefix="/private")
-app.register_blueprint(board_bp, url_prefix="/board")
-app.register_blueprint(resources_bp, url_prefix="/resources")
+app.include_router(
+    board.router,
+    prefix="/board",
+)
+app.include_router(
+    resources.router,
+    prefix="/resources",
+)
 
-@app.route('/', methods = ['GET'])
-def get():
-    return redirect("https://progettochearia.it", 302)
 
+@app.get("/", response_class=RedirectResponse, status_code=302)
+async def root():
+    return "https://progettochearia.it"
 
-if __name__ == "__main__":
-    app.run()
