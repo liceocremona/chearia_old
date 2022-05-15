@@ -7,7 +7,9 @@
 #include <avr/dtostrf.h>
 #include <ArduinoHttpClient.h>
 #include "secret.h"
+#include <ArduinoJson.h>
 
+#define ARDUINOJSON_USE_DOUBLE 0
 char api_server[] = "api.progettochearia.it";
 String key = KEY;
 //Define Firebase data object
