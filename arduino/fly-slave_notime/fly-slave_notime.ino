@@ -14,7 +14,6 @@ char api_server[] = "api.progettochearia.it";
 String key = KEY;
 //Define Firebase data object
 WiFiSSLClient wifi_client;//Inizializzazione classe del client WiFi per fare richieste internet
-HttpClient client = HttpClient(wifi_client, api_server, 443);//Inizializzazione client HTTP 9quello che esegue la richiesta ai link)
 int status;
 
 
@@ -92,6 +91,7 @@ bool addData(String dataName, float Data) {
   Serial.println(dataName);
   Serial.println(Data);
   // questa funzione aggiunge i dati al db
+  HttpClient client = HttpClient(wifi_client, api_server, 443);//Inizializzazione client HTTP 9quello che esegue la richiesta ai link)
   StaticJsonDocument<120> doc;
   String contentType = "application/json";
   String body;
@@ -104,10 +104,16 @@ bool addData(String dataName, float Data) {
   Serial.println(req_path);
   client.put(req_path, contentType, body);
   int statusCode = client.responseStatusCode();
-  String response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
-  Serial.print("Risposta: ");
-  Serial.println(response);
+  client.stop();
+  if (statusCode == 200) 
+  {
+    return true;
+  } 
+  else 
+  {
+    return false;
+  }
 }
