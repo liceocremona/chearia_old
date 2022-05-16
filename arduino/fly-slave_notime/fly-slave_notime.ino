@@ -102,7 +102,7 @@ bool addData(String dataName, float Data) {
   Serial.println(body);
   Serial.print("faccio una richiesta a: ");
   Serial.println(req_path);
-  client.put(, contentType, body);
+  client.put(req_path, contentType, body);
   int statusCode = client.responseStatusCode();
   String response = client.responseBody();
 
