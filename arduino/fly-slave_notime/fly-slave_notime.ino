@@ -1,6 +1,5 @@
 //per usare il codice installare i certificati ssl da i seguenti domini:
-//2vhf9o.deta.dev:443
-//olimpiadirobotica-2021-default-rtdb.europe-west1.firebasedatabase.app:443
+//api.progettochearia.it:443
 //impostare timezone qua --> client.get("/timems/{tz}");
 
 #include <Wire.h>
@@ -8,13 +7,14 @@
 #include <ArduinoHttpClient.h>
 #include "secret.h"
 #include <ArduinoJson.h>
+#include <WiFiNINA.h>
 
 #define ARDUINOJSON_USE_DOUBLE 0
 char api_server[] = "api.progettochearia.it";
 String key = KEY;
 //Define Firebase data object
 WiFiSSLClient wifi_client;//Inizializzazione classe del client WiFi per fare richieste internet
-HttpClient client = HttpClient(wifi_client, time_server, 443);//Inizializzazione client HTTP 9quello che esegue la richiesta ai link)
+HttpClient client = HttpClient(wifi_client, api_server, 443);//Inizializzazione client HTTP 9quello che esegue la richiesta ai link)
 int status;
 
 
@@ -97,45 +97,22 @@ void scalettaData(String dato) {
 
 
 
-bool addData(String dataName, float Data) { 
-// questa funzione aggiunge i dati al db
-  String contentType = "";
-  String body = "id="+dataName + "&key=" + KEY;
-  client.put("/board/putdata", contentType, body);
-  if (curr_time) {//se l'orario è valido
-    Serial.println("tempo ricevuta, inizio lettura data");
-    String curr_date = getCurrentDate();
-    Serial.println(curr_date);
-      if (curr_date) { // se l'orario è valido
-        Serial.println("data ricevuta, imposto il dato nel db");
-        Serial.println(path+"/" + dataName + "/data/" + curr_date + "/" + curr_time);
-        //imposta i dati sul DB Firebase 
-        if (Firebase.setFloat(firebaseData, path+"/" + dataName + "/data/" + curr_date + "/" + curr_time, Data)) { 
-           if (firebaseData.floatData()) {
-            Serial.print("azione riuscita, il dato è: ");
-            Serial.println(firebaseData.floatData());
-            return true;
-           }
-           else {
-            Serial.println("errore nel inserimento del dato, data error");
-            Serial.println(firebaseData.errorReason());
-            return false;
-           }
-        } 
-        else {
-          Serial.println("errore nel inserimento del dato, net error");
-          Serial.println(firebaseData.errorReason());
-          return false;
-        }
-        
-      }
-      else {
-        Serial.println("errore nel leggere la data");
-        return false;
-      }
-  }
-  else {
-    Serial.println("errore nel leggere l'orario");
-    return false;
-  }
+bool addData(String dataName, float Data) {
+  // questa funzione aggiunge i dati al db
+  StaticJsonDocument<120> doc;
+  String contentType = "application/json";
+  String body;
+  doc["key"] = key;
+  doc["datavalue"] = Data;
+  serializeJson(doc, body);
+  Serial.println(body);
+  Serial.println("make request");
+  client.put("/v1/board/putdata/"+dataName, contentType, body);
+  int statusCode = client.responseStatusCode();
+  String response = client.responseBody();
+
+  Serial.print("Status code: ");
+  Serial.println(statusCode);
+  Serial.print("Response: ");
+  Serial.println(response);
 }
