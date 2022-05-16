@@ -92,23 +92,27 @@ bool addData(String dataName, float Data) {
   Serial.println(Data);
   // questa funzione aggiunge i dati al db
   HttpClient client = HttpClient(wifi_client, api_server, 443);//Inizializzazione client HTTP 9quello che esegue la richiesta ai link)
-  StaticJsonDocument<120> doc;
-  String contentType = "application/json";
-  String body;
-  doc["key"] = key;
+  StaticJsonDocument<120> doc; //creazione doc json per body  della richiesta http
+  String contentType = "application/json"; //formato body http
+  String body; 
+  doc["key"] = key; // aggiunta dati al doc json
   doc["datavalue"] = Data;
-  serializeJson(doc, body);
+  serializeJson(doc, body); //conversione del doc json in String
   String req_path = "/v1/board/putdata/"+dataName;
   Serial.println(body);
   Serial.print("faccio una richiesta a: ");
   Serial.println(req_path);
-  client.put(req_path, contentType, body);
+  client.put(req_path, contentType, body);//richiesta http put
   int statusCode = client.responseStatusCode();
+  String response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
-  client.stop();
-  if (statusCode == 200) 
+  Serial.print("Risposta: ");
+  Serial.println(response);
+
+  client.stop();//chiusura client http
+  if (statusCode == 200) //se la richiesta ha successo ritorna true
   {
     return true;
   } 
