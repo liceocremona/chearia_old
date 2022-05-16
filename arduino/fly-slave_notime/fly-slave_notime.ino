@@ -53,9 +53,6 @@ void loop() {
   delay(50);
 }
 
-
-
-
 void receiveEvent(int bytes) {
 //Funzione richiamata al ricevimento dei dati 
   //Funzionamento connessione I2C con libreria Wire:
@@ -91,13 +88,9 @@ void scalettaData(String dato) {
     }
 }
 
-
-
-
-
-
-
 bool addData(String dataName, float Data) {
+  Serial.println(dataName);
+  Serial.println(Data);
   // questa funzione aggiunge i dati al db
   StaticJsonDocument<120> doc;
   String contentType = "application/json";
@@ -105,14 +98,16 @@ bool addData(String dataName, float Data) {
   doc["key"] = key;
   doc["datavalue"] = Data;
   serializeJson(doc, body);
+  String req_path = "/v1/board/putdata/"+dataName;
   Serial.println(body);
-  Serial.println("make request");
-  client.put("/v1/board/putdata/"+dataName, contentType, body);
+  Serial.print("faccio una richiesta a: ");
+  Serial.println(req_path);
+  client.put(, contentType, body);
   int statusCode = client.responseStatusCode();
   String response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
-  Serial.print("Response: ");
+  Serial.print("Risposta: ");
   Serial.println(response);
 }
