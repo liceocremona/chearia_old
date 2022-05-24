@@ -13,24 +13,30 @@ bool pressure_state;
 MQ7 mq7(A_PIN, VOLTAGE);
 
 #include <DHT.h>
-DHT dht(22, DHT11);
+DHT dht(2, DHT11);
 
-#include <MQ131.h>
-int time_wait_ozone = 0;
+
+#define LED_1 3
+#define LED_2 4
+//#include <MQ131.h>
+//int time_wait_ozone = 0;
 
 void setup() {
   Wire.begin();
+  pinMode(LED_1, OUTPUT);
+  pinMode(LED_2, OUTPUT);
   Serial.begin(9600);
 
 
   //impostazioni sensore pressione
   Serial.println("REBOOT");
-
+  digitalWrite(LED_1, HIGH);
   // Initialize the sensor (it is important to get calibration values stored on the device).
 
   if (PressureSens.begin()) {
     Serial.println("BMP180 init success");
     pressure_state = true;
+    digitalWrite(LED_1, LOW);
   }
   else
   {
@@ -49,77 +55,97 @@ void setup() {
   Serial.print("baseline pressure: ");
   Serial.print(baseline);
   Serial.println(" mb");  
-
+  digitalWrite(LED_2, HIGH);
   //impostazioni sensore co
   Serial.println("Calibrating MQ7");
   mq7.calibrate();    // calculates R0
   Serial.println("Calibration done!");
-
+  digitalWrite(LED_2, LOW);
   //inizializzazzione sensore temperatura
+  digitalWrite(LED_1, HIGH);
   dht.begin();
-
-  MQ131.begin(23,A2, LOW_CONCENTRATION, 1000000);  
-
-  Serial.println("Calibration in progress...");
+  digitalWrite(LED_1, LOW);
   
-  MQ131.calibrate();
-  
-  Serial.println("Calibration done!");
-  Serial.print("R0 = ");
-  Serial.print(MQ131.getR0());
-  Serial.println(" Ohms");
-  Serial.print("Time to heat = ");
-  time_wait_ozone = MQ131.getTimeToRead();
-  Serial.print(time_wait_ozone);
-  Serial.println(" s");
+//  MQ131.begin(23,A2, LOW_CONCENTRATION, 1000000);  
+//
+//  Serial.println("Calibration in progress...");
+//  
+//  MQ131.calibrate();
+//  
+//  Serial.println("Calibration done!");
+//  Serial.print("R0 = ");
+//  Serial.print(MQ131.getR0());
+//  Serial.println(" Ohms");
+//  Serial.print("Time to heat = ");
+//  time_wait_ozone = MQ131.getTimeToRead();
+//  Serial.print(time_wait_ozone);
+//  Serial.println(" s");
 }
 
 void loop() {
+  
   //inivio richieste a sensori pressione e passaggio a mkr
+  digitalWrite(LED_1, HIGH);
   char pressure[20];
   getPressuredata(pressure);
+  digitalWrite(LED_1, LOW);
   Serial.println(pressure);
+  digitalWrite(LED_2, HIGH);
   sendData(pressure);
+  digitalWrite(LED_2, LOW);
   
-  delay(3000);
+  delay(8000);
   
+  digitalWrite(LED_1, HIGH);
   char CO_data[20];//get co data e manda a mkr
   getCO(CO_data);
+  digitalWrite(LED_1, LOW);
   Serial.println(CO_data);
+  digitalWrite(LED_2, HIGH);
   sendData(CO_data);
-
-  delay(3000);
-
+  digitalWrite(LED_2, LOW);
+  
+  delay(8000);
+  
+  digitalWrite(LED_1, HIGH);
   char temperture_mis[20]; //get temperatura, converti in 
   getTemperature_sec(temperture_mis);
+  digitalWrite(LED_1, LOW);
   Serial.println(temperture_mis);
+  digitalWrite(LED_2, HIGH);
   sendData(temperture_mis);
+  digitalWrite(LED_2, LOW);
+  
+  delay(8000);
 
-  delay(3000);
-
+  digitalWrite(LED_1, HIGH);
   char humidity_mis[20];
   getHumidity(humidity_mis);
+  digitalWrite(LED_1, LOW);
   Serial.println(humidity_mis);
+  digitalWrite(LED_2, HIGH);
   sendData(humidity_mis);
-
-  delay(3000);
+  digitalWrite(LED_2, LOW);
   
-  char ozone_data[20];
- getOzone(ozone_data);
- Serial.println(ozone_data);
-  sendData(ozone_data);
- time_wait_ozone = MQ131.getTimeToRead();
-
- if (time_wait_ozone > 62000) {
-  delay(1000);
- }else {
-  delay((63000 - time_wait_ozone));
- }
+  delay(8000);
+  
+//  char ozone_data[20];
+// getOzone(ozone_data);
+// Serial.println(ozone_data);
+//  sendData(ozone_data);
+// time_wait_ozone = MQ131.getTimeToRead();
+//
+// if (time_wait_ozone > 62000) {
+//  delay(1000);
+// }else {
+//  delay((63000 - time_wait_ozone));
+// }
 //  
 //  char pm25_data[20];
 //  getPM25(pm25_data);
 //  Serial.println(pm25_data);
 //  sendData(pm25_data);
+ delay(5000);
 }
 
 
@@ -220,30 +246,30 @@ void getHumidity(char return_value[]) {
   }  
 }
 
-void getOzone(char return_value[]) {
-  float ozone = 0.00;
-  float TemperatureO3 = 0.00;
-  float HumidityO3 = 0.00;
-  
-  TemperatureO3 = dht.readTemperature();
-  HumidityO3 = dht.readHumidity();
-  
-  int8_t TemperatureO3_int = (int)TemperatureO3;
-  uint8_t HumidityO3_int = (int)HumidityO3;
-  MQ131.setEnv(TemperatureO3_int,HumidityO3_int); 
-  MQ131.sample();
-  ozone = MQ131.getO3(UG_M3);
-  //inserire operazioni sesnsore
-  char ozone_ch[4];
-  dtostrf(ozone, 5, 2, ozone_ch);
-  char unified[20];
-  strcpy(unified, ozone_ch);
-  strcat(unified, "-ozone");
-  int len = (sizeof(unified)) -1;
-  for (int i = 0; i< len; i++) {
-    return_value[i] = unified[i];
-  }   
-}
+//void getOzone(char return_value[]) {
+//  float ozone = 0.00;
+//  float TemperatureO3 = 0.00;
+//  float HumidityO3 = 0.00;
+//  
+//  TemperatureO3 = dht.readTemperature();
+//  HumidityO3 = dht.readHumidity();
+//  
+//  int8_t TemperatureO3_int = (int)TemperatureO3;
+//  uint8_t HumidityO3_int = (int)HumidityO3;
+//  MQ131.setEnv(TemperatureO3_int,HumidityO3_int); 
+//  MQ131.sample();
+//  ozone = MQ131.getO3(UG_M3);
+//  //inserire operazioni sesnsore
+//  char ozone_ch[4];
+//  dtostrf(ozone, 5, 2, ozone_ch);
+//  char unified[20];
+//  strcpy(unified, ozone_ch);
+//  strcat(unified, "-ozone");
+//  int len = (sizeof(unified)) -1;
+//  for (int i = 0; i< len; i++) {
+//    return_value[i] = unified[i];
+//  }   
+//}
 
 void getPM25(char return_value[]) {
   float pm25 = 0.00;
