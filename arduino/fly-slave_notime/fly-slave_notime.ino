@@ -22,7 +22,7 @@ int status;
 
 
 void setup() {
-  Wire.begin(9);//Inizializzazione connessione I2C con il microcontrollore a 3.3V
+  Wire.begin(8);//Inizializzazione connessione I2C con il microcontrollore a 3.3V
   pinMode(LED_1, OUTPUT);
   pinMode(LED_2, OUTPUT);
   Serial.begin(9600);
