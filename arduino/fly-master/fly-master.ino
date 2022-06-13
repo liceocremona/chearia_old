@@ -1,8 +1,12 @@
-#include <Wire.h>
+
 #include <SFE_BMP180.h>
 #include "MQ7.h"
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
 
-
+RF24 radio; // CE, CSN
+const byte address[6] = "00001";
 SFE_BMP180 PressureSens;
 double baseline; // baseline pressure
 bool pressure_state;
@@ -22,7 +26,17 @@ DHT dht(2, DHT11);
 //int time_wait_ozone = 0;
 
 void setup() {
-  Wire.begin();
+  Serial.begin(9600);
+  
+    if (!radio.begin(7, 8)) {
+  Serial.println(F("radio hardware not responding!"));
+  while (1) {Serial.println("radio hardware not responding!");} // hold program in infinite loop to prevent subsequent errors
+}
+
+  radio.openWritingPipe(address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.stopListening();
+}
   pinMode(LED_1, OUTPUT);
   pinMode(LED_2, OUTPUT);
   Serial.begin(9600);
@@ -86,12 +100,12 @@ void loop() {
   
   //inivio richieste a sensori pressione e passaggio a mkr
   digitalWrite(LED_1, HIGH);
-  char pressure[20];
-  getPressuredata(pressure);
+  char Altitude[20];
+  getAltitudedata(Altitude);
   digitalWrite(LED_1, LOW);
-  Serial.println(pressure);
+  Serial.println(Altitude);
   digitalWrite(LED_2, HIGH);
-  sendData(pressure);
+  sendData(Altitude);
   digitalWrite(LED_2, LOW);
   
   delay(8000);
@@ -149,43 +163,40 @@ void loop() {
 }
 
 
-void sendData(char data[]) {//manda i dati
-  Wire.beginTransmission(9);
-  Wire.write(data);
-  Wire.endTransmission();
+void sendData(char data[]) {//manda i dati;
+  if (radio.write(&data, sizeof(data))){
+    Serial.println("Mandato");}
+
 }
 
 
 //funzioni che ritornano il valore
-void getPressuredata(char return_value[]) {
+void getAltitudedata(char return_value[]) {
   if (pressure_state) {
     //get ìaltitude
   double a,P;
   
-  // Get a new pressure reading:
-
   P = getPressure();
   float pressure = 0;
   pressure= (float) P;
-  // Show the relative altitude difference between
-  // the new reading and the baseline reading:
-  /*if (P) {
-    a = pressure.altitude(P,baseline);
+
+    if (P) {
+    a = pressure.Altitude(P,baseline);
     a += 139.00;
-    altitude = (float) a;
-  }*/
-  char pressure_ch[5];
-  dtostrf(pressure, 6, 2, pressure_ch);
+    Altitude = (float) a;
+  
+  char altitude_ch[5];
+  dtostrf(Altitude, 6, 2, altitude_ch);
   char unified_val[20];
-  strcpy(unified_val, pressure_ch);
-  strcat(unified_val, "-pressure");
+  strcpy(unified_val, altitude_ch);
+  strcat(unified_val, "-Altitude");
   int len = (sizeof(unified_val))-1;
   for (int i = 0; i < len; i ++) {
     return_value[i] = unified_val[i];
   }
   } 
   else {
-    char default_result[] = "1.00-pressure";
+    char default_result[] = "1.00-Altitude";
     int len = (sizeof(default_result)) -1;
     for (int i = 0; i < len; i++) {
       return_value[i] = default_result[i];
