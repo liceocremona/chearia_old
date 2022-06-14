@@ -1,9 +1,10 @@
 
 #include <SFE_BMP180.h>
-#include "MQ7.h"
+#include <MQ7.h>
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
+#include <Wire.h>
 
 RF24 radio; // CE, CSN
 const byte address[6] = "00001";
@@ -34,12 +35,10 @@ void setup() {
 }
 
   radio.openWritingPipe(address);
-  radio.setPALevel(RF24_PA_MIN);
+  radio.setPALevel(RF24_PA_HIGH);
   radio.stopListening();
-}
   pinMode(LED_1, OUTPUT);
   pinMode(LED_2, OUTPUT);
-  Serial.begin(9600);
 
 
   //impostazioni sensore pressione
@@ -164,7 +163,14 @@ void loop() {
 
 
 void sendData(char data[]) {//manda i dati;
-  if (radio.write(&data, sizeof(data))){
+  Serial.println(data);
+  char sendData[32];
+
+  for (int i = 0; i < 20; i++ ) {
+    sendData[i] = data[i];
+  };
+  Serial.println(sendData);
+  if (radio.write(&sendData, sizeof(sendData))){
     Serial.println("Mandato");}
 
 }
@@ -175,28 +181,29 @@ void getAltitudedata(char return_value[]) {
   if (pressure_state) {
     //get ìaltitude
   double a,P;
+  float Altitude = 101 ;
   
   P = getPressure();
   float pressure = 0;
   pressure= (float) P;
 
     if (P) {
-    a = pressure.Altitude(P,baseline);
+    a = PressureSens.altitude(P,baseline);
     a += 139.00;
-    Altitude = (float) a;
+    Altitude = (float) a;}
   
   char altitude_ch[5];
   dtostrf(Altitude, 6, 2, altitude_ch);
   char unified_val[20];
   strcpy(unified_val, altitude_ch);
-  strcat(unified_val, "-Altitude");
+  strcat(unified_val, "-altitude");
   int len = (sizeof(unified_val))-1;
   for (int i = 0; i < len; i ++) {
     return_value[i] = unified_val[i];
   }
   } 
   else {
-    char default_result[] = "1.00-Altitude";
+    char default_result[] = "1.00-altitude";
     int len = (sizeof(default_result)) -1;
     for (int i = 0; i < len; i++) {
       return_value[i] = default_result[i];

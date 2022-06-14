@@ -26,7 +26,7 @@ void setup() {
   while (1) {Serial.println("radio hardware not responding!");} // hold program in infinite loop to prevent subsequent errors
 }
 radio.openReadingPipe(0, address);
-  radio.setPALevel(RF24_PA_MIN);
+  radio.setPALevel(RF24_PA_HIGH);
   radio.startListening();
 }
 
