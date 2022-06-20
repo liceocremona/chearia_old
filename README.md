@@ -17,4 +17,4 @@ Repository principale del progetto CheAria
 [documentazione](docs/index.md)
 
 ## Contatti
-github@iiscremona.it
+- github@iiscremona.it
